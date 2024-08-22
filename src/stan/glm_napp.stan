@@ -16,7 +16,7 @@ functions{
     else reject("Link not supported");
     return eta; // never reached
   }
-  
+
   real normal_glm_lp(vector y, vector beta, real phi, matrix X, int link, vector offs) {
     int n           = rows(y);
     vector[n] theta = X * beta + offs;
@@ -24,7 +24,7 @@ functions{
       theta = lp2mean(theta, link);
     return normal_lpdf(y | theta, sqrt(phi) );
   }
-  
+
   real bernoulli_glm_lp(vector y, vector beta, real phi, matrix X, int link, vector offs) {
     int n           = rows(y);
     vector[n] theta = X * beta + offs;
@@ -32,7 +32,7 @@ functions{
       theta = logit( lp2mean(theta, link) );
     return dot_product(y, theta) - sum( log1p_exp(theta) );
   }
-  
+
   real poisson_glm_lp(vector y, vector beta, real phi, matrix X, int link, vector offs) {
     int n           = rows(y);
     vector[n] theta = X * beta + offs;
@@ -40,7 +40,7 @@ functions{
       theta = log( lp2mean(theta, link) );
     return dot_product(y, theta) - sum( exp(theta) + lgamma(y + 1) );
   }
-  
+
   real gamma_glm_lp(vector y, vector beta, real phi, matrix X, int link, vector offs) {
     int n           = rows(y);
     real tau        = inv(phi); // shape parameter
@@ -49,7 +49,7 @@ functions{
       theta = inv( lp2mean(theta, link) );
     return gamma_lpdf(y | tau, tau * theta );
   }
-  
+
   real invgauss_glm_lp(vector y, vector beta, real phi, matrix X, int link, vector offs) {
     int n                 = rows(y);
     real tau              = inv(phi); // shape parameter
@@ -62,7 +62,7 @@ functions{
             - tau * dot_self( (y .* sqrt(theta) - 1) .* inv_sqrt(y) )
           );
   }
-  
+
   real glm_lp(vector y, vector beta, real phi, matrix X, int dist, int link, vector offs) {
     // Compute likelihood
     if (dist == 1) {     // Bernoulli
@@ -82,6 +82,11 @@ functions{
     }
     else reject("Distribution not supported");
     return 0; // never reached;
+  }
+
+  real logit_beta_lpdf(real x, real shape1, real shape2) {
+    return
+      -lbeta(shape1, shape2) - shape2 * x - (shape1 + shape2) * log1p_exp(-x);
   }
 }
 data {
@@ -104,22 +109,23 @@ data {
 parameters {
   vector[p] beta;
   vector<lower=0>[(dist > 2) ? 1 :  0] dispersion;
-  vector<lower=0,upper=1>[K] a0s;
+  vector[K] logit_a0s;
 }
-
+transformed parameters {
+  vector<lower=0,upper=1>[K] a0s;
+  a0s = inv_logit(logit_a0s);
+}
 // The model to be estimated. We model the output
 // 'y' to be normally distributed with mean 'mu'
 // and standard deviation 'sigma'.
 model {
-  // prior of a0s is beta (uniform if 1's)
-  if ( a0_shape1 != 1 || a0_shape2 != 1)
-    a0s ~ beta(a0_shape1, a0_shape2);
-
   if ( dist <= 2 ) {
     target += glm_lp(y,  beta,  1.0, X,  dist, link, offs); // current data likelihood
 
-    // asympt. power prior
     for ( k in 1:K ) {
+      // prior on logit(a0)
+      target += logit_beta_lpdf(logit_a0s[k] | a0_shape1, a0_shape2);
+      // asympt. power prior
       target += multi_normal_lpdf(beta | theta_hats[, k], inv(a0s[k]) * theta_covars[k]);
     }
   }
@@ -131,6 +137,7 @@ model {
     real log_disp      = log(dispersion[1]);
     vector[p+1] theta  = append_row( beta, log_disp );  // theta = ( beta, log(phi) )'
     for ( k in 1:K ) {
+      target          += logit_beta_lpdf(logit_a0s[k] | a0_shape1, a0_shape2);
       target          += multi_normal_lpdf(theta | theta_hats[, k], inv(a0s[k]) * theta_covars[k]);
     }
     target            += -log_disp;   // jacobian

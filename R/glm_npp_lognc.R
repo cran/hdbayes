@@ -24,8 +24,8 @@
 #'                          the sd parameters for the initial prior on regression coefficients. The sd used is
 #'                          \code{sqrt(dispersion) * beta.sd}. If a scalar is provided, same as for beta.mean. Defaults to
 #'                          a vector of 10s.
-#' @param disp.mean         mean parameter for the half-normal prior on dispersion parameter. Defaults to 0.
-#' @param disp.sd           sd parameter for the half-normal prior on dispersion parameter. Defaults to 10.
+#' @param disp.mean         location parameter for the half-normal prior on dispersion parameter. Defaults to 0.
+#' @param disp.sd           scale parameter for the half-normal prior on dispersion parameter. Defaults to 10.
 #' @param bridge.args       a `list` giving arguments (other than samples, log_posterior, data, lb, ub) to pass
 #'                          onto [bridgesampling::bridge_sampler()].
 #' @param iter_warmup       number of warmup iterations to run per chain. Defaults to 1000. See the argument `iter_warmup` in
@@ -77,6 +77,7 @@ glm.npp.lognc = function(
   }
 
   y0 = histdata[, all.vars(formula)[1]]
+  y0 = unlist(y0)
   n0 = length(y0)
   X0 = model.matrix(formula, histdata)
   p  = ncol(X0)
@@ -145,6 +146,9 @@ glm.npp.lognc = function(
   d    = fit$draws(format = 'draws_matrix')
   summ = posterior::summarise_draws(d)
 
+  ## compute log normalizing constants (lognc) for half-normal prior on dispersion
+  standat$lognc_disp  = pnorm(0, mean = standat$disp_mean, sd = standat$disp_sd, lower.tail = F, log.p = T)
+
   ## estimate log normalizing constant
   log_density = function(pars, data){
     beta       = pars[paste0("beta[", 1:data$p,"]")]
@@ -155,8 +159,7 @@ glm.npp.lognc = function(
     if ( dist > 2 ) {
       dispersion = pars[["dispersion[1]"]]
       prior_lp   = prior_lp +
-        dnorm(dispersion, mean = data$disp_mean, sd = data$disp_sd, log = T) -
-        pnorm(0, mean = data$disp_mean, sd = data$disp_sd, lower.tail = F, log.p = T)
+        dnorm(dispersion, mean = data$disp_mean, sd = data$disp_sd, log = T) - data$lognc_disp
     }
     hist_lp = glm_lp(data$y0, beta, data$X0, dist, link, data$offs0, dispersion)
     return(data$a0 * hist_lp + prior_lp)

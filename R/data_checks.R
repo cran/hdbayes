@@ -12,7 +12,7 @@ get.dist.link = function(family) {
   c(fam.id, link.id)
 }
 
-#' check if the input data are in appropriate forms
+#' check if the input data are in appropriate forms for all methods except for LEAP
 #' @param formula     a two-sided formula giving the relationship between the response variable and covariates.
 #' @param family      an object of class `family`. See \code{\link[stats:family]{?stats::family}}.
 #' @param data.list   a list of `data.frame`s. The first element in the list is the current data, and the rest
@@ -56,6 +56,46 @@ data.checks = function(
         stop("element ", i, " in offset.list cannot contain missing values")
       if ( length(offset.list[[i]]) != nrow(data.list[[i]]) )
         stop("the length of element ", i, " in offset.list must be equal to the number of rows in element ", i, " in data.list if offset.list is not NULL")
+    }
+  }
+}
+
+#' check if the input data are in appropriate forms for LEAP
+#' @param formula     a two-sided formula giving the relationship between the response variable and covariates.
+#' @param family      an object of class `family`. See \code{\link[stats:family]{?stats::family}}.
+#' @param data.list   a list of `data.frame`s. The first element in the list is the current data, and the rest
+#'                    are the historical data sets.
+#' @param K           the desired number of classes to identify for LEAP implementation.
+#' @param offset.list a list of matrices giving the offset for current data followed by historical data. For each
+#'                    matrix, the number of rows corresponds to observations and columns correspond to classes.
+#' @noRd
+data.checks.leap = function(
+    formula, family, data.list, K, offset.list
+) {
+  data.checks(formula, family, data.list, NULL)
+
+  if ( K < 2 )
+    stop("K should be at least 2")
+
+  if ( K != 2 ){
+    if( !is.numeric(K) )
+      stop("K must be a numeric value")
+  }
+
+  if( !( is.null(offset.list) ) ){
+    if ( !( is.list(offset.list) ) )
+      stop("offset.list must be a list of matrices if offset.list is not NULL")
+    if ( length(offset.list) != length(data.list) )
+      stop("offset.list and data.list must have equal lengths if offset.list is not NULL")
+    for( i in seq_len( length(offset.list) ) ){
+      if ( !( is.matrix(offset.list[[i]]) ) )
+        stop("element ", i, " in offset.list must be a matrix")
+      if ( nrow(offset.list[[i]]) != nrow(data.list[[i]]) )
+        stop("element ", i, " in offset.list must have the same number of rows as element ", i, " in data.list if offset.list is not NULL")
+      if ( ncol(offset.list[[i]]) != K )
+        stop("element ", i, " in offset.list must have the same number of columns as K if offset.list is not NULL")
+      if ( any( is.na(offset.list[[i]]) ) )
+        stop("element ", i, " in offset.list cannot contain missing values")
     }
   }
 }
@@ -109,4 +149,21 @@ to.vector = function(
     param = as.numeric(param)
   }
   return(param)
+}
+
+
+#' change the variable names of the `draws_df` object obtained from the input `CmdStanMCMC` object and
+#' reorder the variables so that the updated variable names appear at the top of the `draws_df` object.
+#' @param fit      an object of class `CmdStanMCMC`.
+#' @param oldnames a vector of `character` giving the parameter/variable names in fit to be changed.
+#' @param newnames a vector of `character` giving the new parameter/variable names.
+#' @noRd
+rename.params = function(
+    fit, oldnames, newnames
+) {
+  pars = fit$metadata()$model_params
+  pars = c(pars[1], oldnames, (pars[!pars %in% oldnames])[-1])
+  d    = fit$draws(format = 'draws_df', variables = pars)
+  posterior::variables(d)[posterior::variables(d) %in% oldnames] = newnames
+  return(d)
 }
