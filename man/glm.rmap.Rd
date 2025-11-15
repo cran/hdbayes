@@ -97,8 +97,10 @@ The function returns a \code{list} with the following objects
 \describe{
 \item{post.samples}{an object of class \code{draws_df} giving posterior samples under the robust meta-analytic predictive prior (RMAP)}
 
-\item{post.samples.bhm}{an object of class \code{draws_df} giving posterior samples under the Bayesian hierarchical model (BHM),
-obtained from using \code{\link[=glm.bhm]{glm.bhm()}}}
+\item{post.weight.bhm}{a scalar between 0 and 1 giving the updated mixture weight for posterior density under the MAP prior}
+
+\item{post.samples.bhm}{an object of class \code{draws_df} giving posterior samples under the Bayesian hierarchical model (BHM) (equivalently,
+the MAP prior), obtained from using \code{\link[=glm.bhm]{glm.bhm()}}}
 
 \item{post.samples.vague}{an object of class \code{draws_df} giving posterior samples under the vague/non-informative prior, obtained
 from using \code{\link[=glm.post]{glm.post()}}}
@@ -149,5 +151,5 @@ of the MAP prior, and \eqn{Z_V(D)} is the marginal likelihood of the vague prior
 \references{
 Schmidli, H., Gsteiger, S., Roychoudhury, S., O’Hagan, A., Spiegelhalter, D., and Neuenschwander, B. (2014). Robust meta‐analytic‐predictive priors in clinical trials with historical control information. Biometrics, 70(4), 1023–1032.
 
-Gronau, Q. F., Singmann, H., and Wagenmakers, E.-J. (2020). bridgesampling: An r package for estimating normalizing constants. Journal of Statistical Software, 92(10).
+Gronau, Q. F., Singmann, H., and Wagenmakers, E.-J. (2020). bridgesampling: An R package for estimating normalizing constants. Journal of Statistical Software, 92(10).
 }

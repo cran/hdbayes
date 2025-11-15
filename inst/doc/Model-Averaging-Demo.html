@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Model-Averaging-Demonstration</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<style type="text/css">
+
+div.csl-bib-body { }
+div.csl-entry {
+clear: both;
+margin-bottom: 0em;
+}
+.hanging div.csl-entry {
+margin-left:2em;
+text-indent:-2em;
+}
+div.csl-left-margin {
+min-width:2em;
+float:left;
+}
+div.csl-right-inline {
+margin-left:2em;
+padding-left:1em;
+}
+div.csl-indent {
+margin-left: 2em;
+}
+</style>
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Model-Averaging-Demonstration</h1>
+
+
+<div id="TOC">
+<ul>
+<li><a href="#introduction" id="toc-introduction">Introduction</a></li>
+<li><a href="#load-data" id="toc-load-data">Load Data</a></li>
+<li><a href="#fitting-pweph-models-with-different-priors" id="toc-fitting-pweph-models-with-different-priors">Fitting PWEPH Models
+with Different Priors</a>
+<ul>
+<li><a href="#reference-prior" id="toc-reference-prior">Reference
+Prior</a></li>
+<li><a href="#power-prior" id="toc-power-prior">Power Prior</a></li>
+<li><a href="#commensurate-prior" id="toc-commensurate-prior">Commensurate Prior</a></li>
+</ul></li>
+<li><a href="#model-averaging-and-ensemble-inference" id="toc-model-averaging-and-ensemble-inference">Model Averaging and
+Ensemble Inference</a>
+<ul>
+<li><a href="#posterior-summaries-from-individual-and-ensemble-methods" id="toc-posterior-summaries-from-individual-and-ensemble-methods">Posterior
+Summaries from Individual and Ensemble Methods</a></li>
+<li><a href="#posterior-densities-from-ensemble-methods" id="toc-posterior-densities-from-ensemble-methods">Posterior Densities
+from Ensemble Methods</a></li>
+</ul></li>
+<li><a href="#references" id="toc-references">References</a></li>
+</ul>
+</div>
+
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>In this vignette, we demonstrate how to perform Bayesian model
+averaging using data from two melanoma clinical trials conducted by the
+Eastern Cooperative Oncology Group (ECOG): E1684 and E1690. The E1684
+trial is treated as external data, while the E1690 trial serves as the
+current trial data. Both trials evaluated the effect of high-dose
+interferon alfa-2b (IFN) on relapse-free survival (RFS) compared to an
+observation arm (control). RFS is defined as the time from randomization
+to either cancer relapse or death.</p>
+<p>The goal of this analysis is to estimate the log hazard ratio (log
+HR) of RFS between the treated and control groups. To account for model
+uncertainty, we consider multiple combinations of outcome models and
+prior specifications, including a non-informative reference prior and
+several informative priors that incorporate external information. For
+these candidate models, we compute model averaging weights using
+approaches such as Bayesian model averaging (BMA, <span class="citation">Madigan and Raftery (1994)</span>), pseudo-BMA, and
+stacking (<span class="citation">Yao et al. (2018)</span>). We then draw
+posterior samples from the ensemble distribution to obtain
+model-averaged estimates of the treatment effect.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(hdbayes)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(survival)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">library</span>(posterior)</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="fu">library</span>(ggthemes)</span></code></pre></div>
+</div>
+<div id="load-data" class="section level1">
+<h1>Load Data</h1>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="do">## replace 0 failure times with 0.50 days</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>E1684<span class="sc">$</span>failtime[E1684<span class="sc">$</span>failtime <span class="sc">==</span> <span class="dv">0</span>] <span class="ot">&lt;-</span> <span class="fl">0.50</span><span class="sc">/</span><span class="fl">365.25</span></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>E1690<span class="sc">$</span>failtime[E1690<span class="sc">$</span>failtime <span class="sc">==</span> <span class="dv">0</span>] <span class="ot">&lt;-</span> <span class="fl">0.50</span><span class="sc">/</span><span class="fl">365.25</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>data.list  <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">currdata =</span> E1690, <span class="at">histdata =</span> E1684)</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>fmla <span class="ot">&lt;-</span> survival<span class="sc">::</span><span class="fu">Surv</span>(failtime, failcens) <span class="sc">~</span> treatment</span></code></pre></div>
+<p>For comparison, we first estimate the treatment effect (i.e., the log
+hazard ratio between the treated and control groups) by fitting a
+proportional hazards (PH) regression model that includes only the
+treatment indicator as a covariate, using the <code>coxph()</code>
+function from the <strong>survival</strong> package.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="do">## fit proportional hazards models on E1690 and E1684 data</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>fit.mle.cur <span class="ot">&lt;-</span> <span class="fu">coxph</span>(<span class="at">formula =</span> fmla, <span class="at">data =</span> data.list<span class="sc">$</span>currdata)</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="fu">summary</span>(fit.mle.cur)</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co">#&gt; Call:</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co">#&gt; coxph(formula = fmla, data = data.list$currdata)</span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="co">#&gt;   n= 426, number of events= 240 </span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="co">#&gt;              coef exp(coef) se(coef)      z Pr(&gt;|z|)  </span></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="co">#&gt; treatment -0.2411    0.7858   0.1293 -1.865   0.0622 .</span></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="co">#&gt; ---</span></span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="co">#&gt; Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</span></span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a><span class="co">#&gt;           exp(coef) exp(-coef) lower .95 upper .95</span></span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a><span class="co">#&gt; treatment    0.7858      1.273    0.6099     1.012</span></span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a><span class="co">#&gt; Concordance= 0.533  (se = 0.017 )</span></span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a><span class="co">#&gt; Likelihood ratio test= 3.48  on 1 df,   p=0.06</span></span>
+<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a><span class="co">#&gt; Wald test            = 3.48  on 1 df,   p=0.06</span></span>
+<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a><span class="co">#&gt; Score (logrank) test = 3.49  on 1 df,   p=0.06</span></span>
+<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a><span class="fu">suppressMessages</span>(<span class="fu">confint</span>(fit.mle.cur))</span>
+<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a><span class="co">#&gt;                2.5 %     97.5 %</span></span>
+<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a><span class="co">#&gt; treatment -0.4944693 0.01233594</span></span></code></pre></div>
+</div>
+<div id="fitting-pweph-models-with-different-priors" class="section level1">
+<h1>Fitting PWEPH Models with Different Priors</h1>
+<p>We now proceed to the Bayesian analysis using the functions provided
+in the <strong>hdbayes</strong> package. For the outcome model, we
+consider a PH model with a piecewise constant baseline hazard, referred
+to as the piecewise exponential proportional hazards (PWEPH) model. The
+PWEPH model assumes a constant baseline hazard within each of <span class="math inline">\(J\)</span> prespecified time intervals, defined by
+the partition <span class="math inline">\(0 = s_0 &lt; s_1 &lt; \ldots
+&lt; s_{J-1} &lt; s_J = \infty\)</span>. Let <span class="math inline">\(\beta = (\beta_1, \ldots, \beta_p)&#39;\)</span>
+denote the vector of regression coefficients, and <span class="math inline">\(\lambda = (\lambda_1, \ldots,
+\lambda_J)&#39;\)</span> denote the baseline hazards. The conditional
+survival function for a subject with covariate vector <span class="math inline">\(x\)</span> is given by <span class="math display">\[
+\begin{align*}
+S(t \mid \beta, \lambda) = \exp\big\{-\sum_{j=1}^{J} \lambda_j \cdot
+\big[ (s_j - s_{j-1}) \cdot I(t &gt; s_j) + (t - s_{j-1}) \cdot
+I(s_{j-1} &lt; t \leq s_j)\big] \exp\{x&#39;\beta\}\big\},
+\end{align*}
+\]</span> where <span class="math inline">\(I(\cdot)\)</span> is the
+indicator function.</p>
+<p>In our analysis, we consider two values of the number of intervals
+<span class="math inline">\(J\)</span> in the PWEPH model: <span class="math inline">\(J = 2\)</span> and <span class="math inline">\(J =
+5\)</span>. For each <span class="math inline">\(J\)</span>, the
+cutpoints are chosen so that each interval contains approximately the
+same number of events in the current trial (E1690). We then fit PWEPH
+models under three prior specifications for <span class="math inline">\((\beta, \lambda)\)</span>:</p>
+<ol style="list-style-type: decimal">
+<li><p>Non-informative reference prior.</p></li>
+<li><p>Power prior (PP, <span class="citation">Ibrahim and Chen
+(2000)</span>): Incorporates external data from E1684 with a discounting
+parameter <span class="math inline">\(a_0 = 0.5\)</span>.</p></li>
+<li><p>Commensurate prior (CP, <span class="citation">Hobbs, Sargent,
+and Carlin (2012)</span>): Links the parameters of the external and
+current data models through commensurability parameters that determine
+the degree of borrowing from the external data.</p></li>
+</ol>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>nchains       <span class="ot">&lt;-</span> <span class="dv">4</span> <span class="co"># number of Markov chains</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>ncores        <span class="ot">&lt;-</span> <span class="dv">4</span> <span class="co"># maximum number of MCMC chains to run in parallel</span></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>iter_warmup   <span class="ot">&lt;-</span> <span class="dv">1000</span> <span class="co"># warmup per chain for MCMC sampling</span></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>iter_sampling <span class="ot">&lt;-</span> <span class="dv">2500</span> <span class="co"># number of samples post warmup per chain</span></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>base.pars     <span class="ot">&lt;-</span> <span class="st">&quot;treatment&quot;</span></span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co"># function to pull out the posterior summaries in a convenient form</span></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>get_summaries <span class="ot">&lt;-</span> <span class="cf">function</span>(fit, pars.interest, <span class="at">digits =</span> <span class="dv">2</span>) {</span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>  out <span class="ot">&lt;-</span> <span class="fu">suppressWarnings</span>(</span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a>    fit <span class="sc">%&gt;%</span></span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a>      <span class="fu">select</span>(<span class="fu">all_of</span>(pars.interest)) <span class="sc">%&gt;%</span></span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a>      posterior<span class="sc">::</span><span class="fu">summarise_draws</span>(</span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a>        mean,</span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a>        sd,</span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a>        <span class="st">`</span><span class="at">q2.5</span><span class="st">`</span> <span class="ot">=</span> <span class="er">~</span> posterior<span class="sc">::</span><span class="fu">quantile2</span>(.x, <span class="at">probs =</span> <span class="fl">0.025</span>),</span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a>        <span class="st">`</span><span class="at">q97.5</span><span class="st">`</span> <span class="ot">=</span> <span class="er">~</span> posterior<span class="sc">::</span><span class="fu">quantile2</span>(.x, <span class="at">probs =</span> <span class="fl">0.975</span>),</span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a>        rhat,</span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a>        ess_bulk,</span>
+<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a>        ess_tail</span>
+<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a>      ) <span class="sc">%&gt;%</span></span>
+<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a>      <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.numeric), \(x) <span class="fu">round</span>(x, digits)))</span>
+<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a>  )</span>
+<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a>  <span class="fu">return</span>(out)</span>
+<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="do">## determine breaks/cutpoints for PWEPH models</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="do">## J = 2</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>nbreaks   <span class="ot">&lt;-</span> <span class="dv">2</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>probs     <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span>nbreaks <span class="sc">/</span> nbreaks</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>breaks_J2 <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>  <span class="fu">quantile</span>(E1690[E1690<span class="sc">$</span>failcens<span class="sc">==</span><span class="dv">1</span>, ]<span class="sc">$</span>failtime, <span class="at">probs =</span> probs)</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>)</span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>breaks_J2 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, breaks_J2)</span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="do">## set the last cutpoint to a large value to cover the tail</span></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a>breaks_J2[<span class="fu">length</span>(breaks_J2)] <span class="ot">&lt;-</span> <span class="fu">max</span>(<span class="dv">10000</span>, <span class="dv">1000</span> <span class="sc">*</span> breaks_J2[<span class="fu">length</span>(breaks_J2)])</span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a></span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a><span class="do">## J = 5</span></span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a>nbreaks   <span class="ot">&lt;-</span> <span class="dv">5</span></span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a>probs     <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span>nbreaks <span class="sc">/</span> nbreaks</span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a>breaks_J5 <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(</span>
+<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a>  <span class="fu">quantile</span>(E1690[E1690<span class="sc">$</span>failcens <span class="sc">==</span> <span class="dv">1</span>, ]<span class="sc">$</span>failtime, <span class="at">probs =</span> probs)</span>
+<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a>)</span>
+<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a>breaks_J5 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, breaks_J5)</span>
+<span id="cb5-20"><a href="#cb5-20" tabindex="-1"></a>breaks_J5[<span class="fu">length</span>(breaks_J5)] <span class="ot">&lt;-</span> <span class="fu">max</span>(<span class="dv">10000</span>, <span class="dv">1000</span> <span class="sc">*</span> breaks_J5[<span class="fu">length</span>(breaks_J5)])</span></code></pre></div>
+<div id="reference-prior" class="section level2">
+<h2>Reference Prior</h2>
+<p>In the reference prior, we specify <span class="math inline">\(\beta_1, \ldots, \beta_p \sim N(0, 10^2)\)</span>
+and <span class="math inline">\(\lambda_1, \ldots, \lambda_J \sim
+N^{+}(0, 10^2)\)</span>, where <span class="math inline">\(\beta =
+(\beta_1, \ldots, \beta_p)&#39;\)</span> is the vector of regression
+coefficients, <span class="math inline">\(\lambda = (\lambda_1, \ldots,
+\lambda_J)&#39;\)</span> is the vector of baseline hazards, and <span class="math inline">\(N^{+}\)</span> denotes the half-normal
+distribution.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="cf">if</span> (instantiate<span class="sc">::</span><span class="fu">stan_cmdstan_exists</span>()) {</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>  fit_post_J2 <span class="ot">&lt;-</span> <span class="fu">pwe.post</span>(</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>    <span class="at">formula =</span> fmla, <span class="at">data.list =</span> data.list,</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>    <span class="at">breaks =</span> breaks_J2,</span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>    <span class="at">beta.sd =</span> <span class="dv">10</span>,</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>    <span class="at">base.hazard.sd =</span> <span class="dv">10</span>,</span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>    <span class="at">get.loglik =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>    <span class="at">chains =</span> nchains, <span class="at">parallel_chains =</span> ncores,</span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>    <span class="at">iter_warmup =</span> iter_warmup, <span class="at">iter_sampling =</span> iter_sampling,</span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>    <span class="at">refresh =</span> <span class="dv">0</span></span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a>  )</span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a>  fit_post_J5 <span class="ot">&lt;-</span> <span class="fu">pwe.post</span>(</span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a>    <span class="at">formula =</span> fmla, <span class="at">data.list =</span> data.list,</span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a>    <span class="at">breaks =</span> breaks_J5,</span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a>    <span class="at">beta.sd =</span> <span class="dv">10</span>,</span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a>    <span class="at">base.hazard.sd =</span> <span class="dv">10</span>,</span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a>    <span class="at">get.loglik =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a>    <span class="at">chains =</span> nchains, <span class="at">parallel_chains =</span> ncores,</span>
+<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a>    <span class="at">iter_warmup =</span> iter_warmup, <span class="at">iter_sampling =</span> iter_sampling,</span>
+<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a>    <span class="at">refresh =</span> <span class="dv">0</span></span>
+<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a>  )</span>
+<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a>}</span>
+<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a><span class="co">#&gt; Running MCMC with 4 parallel chains...</span></span>
+<span id="cb6-24"><a href="#cb6-24" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-25"><a href="#cb6-25" tabindex="-1"></a><span class="co">#&gt; Chain 1 finished in 0.9 seconds.</span></span>
+<span id="cb6-26"><a href="#cb6-26" tabindex="-1"></a><span class="co">#&gt; Chain 2 finished in 0.9 seconds.</span></span>
+<span id="cb6-27"><a href="#cb6-27" tabindex="-1"></a><span class="co">#&gt; Chain 3 finished in 0.9 seconds.</span></span>
+<span id="cb6-28"><a href="#cb6-28" tabindex="-1"></a><span class="co">#&gt; Chain 4 finished in 0.9 seconds.</span></span>
+<span id="cb6-29"><a href="#cb6-29" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-30"><a href="#cb6-30" tabindex="-1"></a><span class="co">#&gt; All 4 chains finished successfully.</span></span>
+<span id="cb6-31"><a href="#cb6-31" tabindex="-1"></a><span class="co">#&gt; Mean chain execution time: 0.9 seconds.</span></span>
+<span id="cb6-32"><a href="#cb6-32" tabindex="-1"></a><span class="co">#&gt; Total execution time: 1.0 seconds.</span></span>
+<span id="cb6-33"><a href="#cb6-33" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-34"><a href="#cb6-34" tabindex="-1"></a><span class="co">#&gt; Running MCMC with 4 parallel chains...</span></span>
+<span id="cb6-35"><a href="#cb6-35" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-36"><a href="#cb6-36" tabindex="-1"></a><span class="co">#&gt; Chain 1 finished in 1.0 seconds.</span></span>
+<span id="cb6-37"><a href="#cb6-37" tabindex="-1"></a><span class="co">#&gt; Chain 2 finished in 1.1 seconds.</span></span>
+<span id="cb6-38"><a href="#cb6-38" tabindex="-1"></a><span class="co">#&gt; Chain 3 finished in 1.1 seconds.</span></span>
+<span id="cb6-39"><a href="#cb6-39" tabindex="-1"></a><span class="co">#&gt; Chain 4 finished in 1.0 seconds.</span></span>
+<span id="cb6-40"><a href="#cb6-40" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-41"><a href="#cb6-41" tabindex="-1"></a><span class="co">#&gt; All 4 chains finished successfully.</span></span>
+<span id="cb6-42"><a href="#cb6-42" tabindex="-1"></a><span class="co">#&gt; Mean chain execution time: 1.0 seconds.</span></span>
+<span id="cb6-43"><a href="#cb6-43" tabindex="-1"></a><span class="co">#&gt; Total execution time: 1.1 seconds.</span></span>
+<span id="cb6-44"><a href="#cb6-44" tabindex="-1"></a></span>
+<span id="cb6-45"><a href="#cb6-45" tabindex="-1"></a>summ_ref <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">bind_rows</span>(</span>
+<span id="cb6-46"><a href="#cb6-46" tabindex="-1"></a>  <span class="fu">get_summaries</span>(fit_post_J2, <span class="at">pars.interest =</span> base.pars) <span class="sc">%&gt;%</span></span>
+<span id="cb6-47"><a href="#cb6-47" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">prior =</span> <span class="st">&quot;Reference&quot;</span>, <span class="at">J =</span> <span class="dv">2</span>),</span>
+<span id="cb6-48"><a href="#cb6-48" tabindex="-1"></a>  <span class="fu">get_summaries</span>(fit_post_J5, <span class="at">pars.interest =</span> base.pars) <span class="sc">%&gt;%</span></span>
+<span id="cb6-49"><a href="#cb6-49" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">prior =</span> <span class="st">&quot;Reference&quot;</span>, <span class="at">J =</span> <span class="dv">5</span>)</span>
+<span id="cb6-50"><a href="#cb6-50" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
+<span id="cb6-51"><a href="#cb6-51" tabindex="-1"></a>  <span class="fu">relocate</span>(J, prior, <span class="at">.before =</span> <span class="dv">1</span>)</span>
+<span id="cb6-52"><a href="#cb6-52" tabindex="-1"></a></span>
+<span id="cb6-53"><a href="#cb6-53" tabindex="-1"></a>summ_ref</span>
+<span id="cb6-54"><a href="#cb6-54" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 10</span></span>
+<span id="cb6-55"><a href="#cb6-55" tabindex="-1"></a><span class="co">#&gt;       J prior     variable   mean    sd  q2.5 q97.5  rhat ess_bulk ess_tail</span></span>
+<span id="cb6-56"><a href="#cb6-56" tabindex="-1"></a><span class="co">#&gt;   &lt;dbl&gt; &lt;chr&gt;     &lt;chr&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;</span></span>
+<span id="cb6-57"><a href="#cb6-57" tabindex="-1"></a><span class="co">#&gt; 1     2 Reference treatment -0.27  0.13 -0.52 -0.02     1    5013.    5849.</span></span>
+<span id="cb6-58"><a href="#cb6-58" tabindex="-1"></a><span class="co">#&gt; 2     5 Reference treatment -0.29  0.13 -0.54 -0.03     1    7350.    7341.</span></span></code></pre></div>
+</div>
+<div id="power-prior" class="section level2">
+<h2>Power Prior</h2>
+<p>The power prior (PP) takes the form: <span class="math display">\[\pi_{\text{PP}}(\beta, \lambda) \propto
+\mathcal{L}(\beta, \lambda \mid D_0)^{a_0} ~\pi_0(\beta,
+\lambda),\]</span></p>
+<p>where <span class="math inline">\(\mathcal{L}(\beta, \lambda \mid
+D_0)\)</span> is the likelihood of the PWEPH model based on the external
+data <span class="math inline">\(D_0\)</span>, and <span class="math inline">\(\pi_0(\beta, \lambda)\)</span> is the initial
+prior, taken here to be the same as the reference prior described above.
+The discounting parameter is set to <span class="math inline">\(a_0 =
+0.5\)</span>, which downweights the external information by <span class="math inline">\(50\%\)</span>.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="cf">if</span> (instantiate<span class="sc">::</span><span class="fu">stan_cmdstan_exists</span>()) {</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>  fit_pp_J2 <span class="ot">&lt;-</span> <span class="fu">pwe.pp</span>(</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>    <span class="at">formula =</span> fmla, <span class="at">data.list =</span> data.list,</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>    <span class="at">breaks =</span> breaks_J2,</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>    <span class="at">a0 =</span> <span class="fl">0.5</span>,</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>    <span class="at">beta.sd =</span> <span class="dv">10</span>,</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>    <span class="at">base.hazard.sd =</span> <span class="dv">10</span>,</span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>    <span class="at">get.loglik =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>    <span class="at">chains =</span> nchains, <span class="at">parallel_chains =</span> ncores,</span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a>    <span class="at">iter_warmup =</span> iter_warmup, <span class="at">iter_sampling =</span> iter_sampling,</span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a>    <span class="at">refresh =</span> <span class="dv">0</span></span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a>  )</span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a>  fit_pp_J5 <span class="ot">&lt;-</span> <span class="fu">pwe.pp</span>(</span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a>    <span class="at">formula =</span> fmla, <span class="at">data.list =</span> data.list,</span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a>    <span class="at">breaks =</span> breaks_J5,</span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a>    <span class="at">a0 =</span> <span class="fl">0.5</span>,</span>
+<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a>    <span class="at">beta.sd =</span> <span class="dv">10</span>,</span>
+<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a>    <span class="at">base.hazard.sd =</span> <span class="dv">10</span>,</span>
+<span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a>    <span class="at">get.loglik =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a>    <span class="at">chains =</span> nchains, <span class="at">parallel_chains =</span> ncores,</span>
+<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a>    <span class="at">iter_warmup =</span> iter_warmup, <span class="at">iter_sampling =</span> iter_sampling,</span>
+<span id="cb7-22"><a href="#cb7-22" tabindex="-1"></a>    <span class="at">refresh =</span> <span class="dv">0</span></span>
+<span id="cb7-23"><a href="#cb7-23" tabindex="-1"></a>  )</span>
+<span id="cb7-24"><a href="#cb7-24" tabindex="-1"></a>}</span>
+<span id="cb7-25"><a href="#cb7-25" tabindex="-1"></a><span class="co">#&gt; Running MCMC with 4 parallel chains...</span></span>
+<span id="cb7-26"><a href="#cb7-26" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-27"><a href="#cb7-27" tabindex="-1"></a><span class="co">#&gt; Chain 2 finished in 1.2 seconds.</span></span>
+<span id="cb7-28"><a href="#cb7-28" tabindex="-1"></a><span class="co">#&gt; Chain 1 finished in 1.3 seconds.</span></span>
+<span id="cb7-29"><a href="#cb7-29" tabindex="-1"></a><span class="co">#&gt; Chain 3 finished in 1.2 seconds.</span></span>
+<span id="cb7-30"><a href="#cb7-30" tabindex="-1"></a><span class="co">#&gt; Chain 4 finished in 1.2 seconds.</span></span>
+<span id="cb7-31"><a href="#cb7-31" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-32"><a href="#cb7-32" tabindex="-1"></a><span class="co">#&gt; All 4 chains finished successfully.</span></span>
+<span id="cb7-33"><a href="#cb7-33" tabindex="-1"></a><span class="co">#&gt; Mean chain execution time: 1.3 seconds.</span></span>
+<span id="cb7-34"><a href="#cb7-34" tabindex="-1"></a><span class="co">#&gt; Total execution time: 1.4 seconds.</span></span>
+<span id="cb7-35"><a href="#cb7-35" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-36"><a href="#cb7-36" tabindex="-1"></a><span class="co">#&gt; Running MCMC with 4 parallel chains...</span></span>
+<span id="cb7-37"><a href="#cb7-37" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-38"><a href="#cb7-38" tabindex="-1"></a><span class="co">#&gt; Chain 2 finished in 1.4 seconds.</span></span>
+<span id="cb7-39"><a href="#cb7-39" tabindex="-1"></a><span class="co">#&gt; Chain 4 finished in 1.3 seconds.</span></span>
+<span id="cb7-40"><a href="#cb7-40" tabindex="-1"></a><span class="co">#&gt; Chain 1 finished in 1.4 seconds.</span></span>
+<span id="cb7-41"><a href="#cb7-41" tabindex="-1"></a><span class="co">#&gt; Chain 3 finished in 1.4 seconds.</span></span>
+<span id="cb7-42"><a href="#cb7-42" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-43"><a href="#cb7-43" tabindex="-1"></a><span class="co">#&gt; All 4 chains finished successfully.</span></span>
+<span id="cb7-44"><a href="#cb7-44" tabindex="-1"></a><span class="co">#&gt; Mean chain execution time: 1.4 seconds.</span></span>
+<span id="cb7-45"><a href="#cb7-45" tabindex="-1"></a><span class="co">#&gt; Total execution time: 1.5 seconds.</span></span>
+<span id="cb7-46"><a href="#cb7-46" tabindex="-1"></a></span>
+<span id="cb7-47"><a href="#cb7-47" tabindex="-1"></a>summ_pp <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">bind_rows</span>(</span>
+<span id="cb7-48"><a href="#cb7-48" tabindex="-1"></a>  <span class="fu">get_summaries</span>(fit_pp_J2, <span class="at">pars.interest =</span> base.pars) <span class="sc">%&gt;%</span></span>
+<span id="cb7-49"><a href="#cb7-49" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">prior =</span> <span class="st">&quot;PP&quot;</span>, <span class="at">J =</span> <span class="dv">2</span>),</span>
+<span id="cb7-50"><a href="#cb7-50" tabindex="-1"></a>  <span class="fu">get_summaries</span>(fit_pp_J5, <span class="at">pars.interest =</span> base.pars) <span class="sc">%&gt;%</span></span>
+<span id="cb7-51"><a href="#cb7-51" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">prior =</span> <span class="st">&quot;PP&quot;</span>, <span class="at">J =</span> <span class="dv">5</span>)</span>
+<span id="cb7-52"><a href="#cb7-52" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
+<span id="cb7-53"><a href="#cb7-53" tabindex="-1"></a>  <span class="fu">relocate</span>(J, prior, <span class="at">.before =</span> <span class="dv">1</span>)</span>
+<span id="cb7-54"><a href="#cb7-54" tabindex="-1"></a></span>
+<span id="cb7-55"><a href="#cb7-55" tabindex="-1"></a>summ_pp</span>
+<span id="cb7-56"><a href="#cb7-56" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 10</span></span>
+<span id="cb7-57"><a href="#cb7-57" tabindex="-1"></a><span class="co">#&gt;       J prior variable   mean    sd  q2.5 q97.5  rhat ess_bulk ess_tail</span></span>
+<span id="cb7-58"><a href="#cb7-58" tabindex="-1"></a><span class="co">#&gt;   &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;</span></span>
+<span id="cb7-59"><a href="#cb7-59" tabindex="-1"></a><span class="co">#&gt; 1     2 PP    treatment -0.32  0.11 -0.53  -0.1     1    5060.    5649.</span></span>
+<span id="cb7-60"><a href="#cb7-60" tabindex="-1"></a><span class="co">#&gt; 2     5 PP    treatment -0.32  0.11 -0.53  -0.1     1    7953.    7659.</span></span></code></pre></div>
+</div>
+<div id="commensurate-prior" class="section level2">
+<h2>Commensurate Prior</h2>
+<p>Under the commensurate prior (CP), the parameters of the current and
+external data models are linked through commensurability parameters that
+determine the degree of borrowing from the external data. Let <span class="math inline">\(\beta_0 = (\beta_{01}, \ldots,
+\beta_{0p})&#39;\)</span> and <span class="math inline">\(\lambda_0 =
+(\lambda_{01}, \ldots, \lambda_{0J})&#39;\)</span> denote the vectors of
+regression coefficients and baseline hazards for the external data
+model, respectively. For <span class="math inline">\(j = 1, \ldots,
+p\)</span>, we assume <span class="math display">\[\beta_j \sim
+N(\beta_{0j}, \tau_j^{-1}),\]</span> where <span class="math inline">\(\tau_j\)</span> is referred as the
+commensurability parameter. The <span class="math inline">\(\tau_j\)</span>’s are treated as random and
+assigned a spike-and-slab prior, which is specified as a mixture of two
+half-normal priors. Specifically, for <span class="math inline">\(j = 1,
+\ldots, p\)</span>, the priors on <span class="math inline">\(\beta_{0j}\)</span> and <span class="math inline">\(\tau_j\)</span> are</p>
+<p><span class="math display">\[
+\begin{align*}
+\beta_{0j} &amp;\sim N(0, 10^2), \\
+\tau_j &amp;\sim 0.1 \cdot N^{+}(200, 0.1^2) + 0.9 \cdot N^{+}(0, 5^2).
+\end{align*}
+\]</span></p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="cf">if</span> (instantiate<span class="sc">::</span><span class="fu">stan_cmdstan_exists</span>()) {</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>  fit_cp_J2 <span class="ot">&lt;-</span> <span class="fu">pwe.commensurate</span>(</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>    <span class="at">formula =</span> fmla, <span class="at">data.list =</span> data.list,</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>    <span class="at">breaks =</span> breaks_J2,</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>    <span class="at">beta0.sd =</span> <span class="dv">10</span>,</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>    <span class="at">base.hazard.sd =</span> <span class="dv">10</span>,</span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>    <span class="at">get.loglik =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>    <span class="at">chains =</span> nchains, <span class="at">parallel_chains =</span> ncores,</span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>    <span class="at">iter_warmup =</span> iter_warmup, <span class="at">iter_sampling =</span> iter_sampling,</span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>    <span class="at">refresh =</span> <span class="dv">0</span></span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a>  )</span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a>  fit_cp_J5 <span class="ot">&lt;-</span> <span class="fu">pwe.commensurate</span>(</span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a>    <span class="at">formula =</span> fmla, <span class="at">data.list =</span> data.list,</span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a>    <span class="at">breaks =</span> breaks_J5,</span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a>    <span class="at">beta0.sd =</span> <span class="dv">10</span>,</span>
+<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a>    <span class="at">base.hazard.sd =</span> <span class="dv">10</span>,</span>
+<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a>    <span class="at">get.loglik =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb8-18"><a href="#cb8-18" tabindex="-1"></a>    <span class="at">chains =</span> nchains, <span class="at">parallel_chains =</span> ncores,</span>
+<span id="cb8-19"><a href="#cb8-19" tabindex="-1"></a>    <span class="at">iter_warmup =</span> iter_warmup, <span class="at">iter_sampling =</span> iter_sampling,</span>
+<span id="cb8-20"><a href="#cb8-20" tabindex="-1"></a>    <span class="at">refresh =</span> <span class="dv">0</span></span>
+<span id="cb8-21"><a href="#cb8-21" tabindex="-1"></a>  )</span>
+<span id="cb8-22"><a href="#cb8-22" tabindex="-1"></a>}</span>
+<span id="cb8-23"><a href="#cb8-23" tabindex="-1"></a><span class="co">#&gt; Running MCMC with 4 parallel chains...</span></span>
+<span id="cb8-24"><a href="#cb8-24" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-25"><a href="#cb8-25" tabindex="-1"></a><span class="co">#&gt; Chain 1 finished in 1.6 seconds.</span></span>
+<span id="cb8-26"><a href="#cb8-26" tabindex="-1"></a><span class="co">#&gt; Chain 4 finished in 1.5 seconds.</span></span>
+<span id="cb8-27"><a href="#cb8-27" tabindex="-1"></a><span class="co">#&gt; Chain 2 finished in 1.6 seconds.</span></span>
+<span id="cb8-28"><a href="#cb8-28" tabindex="-1"></a><span class="co">#&gt; Chain 3 finished in 1.6 seconds.</span></span>
+<span id="cb8-29"><a href="#cb8-29" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-30"><a href="#cb8-30" tabindex="-1"></a><span class="co">#&gt; All 4 chains finished successfully.</span></span>
+<span id="cb8-31"><a href="#cb8-31" tabindex="-1"></a><span class="co">#&gt; Mean chain execution time: 1.6 seconds.</span></span>
+<span id="cb8-32"><a href="#cb8-32" tabindex="-1"></a><span class="co">#&gt; Total execution time: 1.7 seconds.</span></span>
+<span id="cb8-33"><a href="#cb8-33" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-34"><a href="#cb8-34" tabindex="-1"></a><span class="co">#&gt; Running MCMC with 4 parallel chains...</span></span>
+<span id="cb8-35"><a href="#cb8-35" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-36"><a href="#cb8-36" tabindex="-1"></a><span class="co">#&gt; Chain 1 finished in 1.6 seconds.</span></span>
+<span id="cb8-37"><a href="#cb8-37" tabindex="-1"></a><span class="co">#&gt; Chain 3 finished in 1.6 seconds.</span></span>
+<span id="cb8-38"><a href="#cb8-38" tabindex="-1"></a><span class="co">#&gt; Chain 4 finished in 1.6 seconds.</span></span>
+<span id="cb8-39"><a href="#cb8-39" tabindex="-1"></a><span class="co">#&gt; Chain 2 finished in 1.7 seconds.</span></span>
+<span id="cb8-40"><a href="#cb8-40" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-41"><a href="#cb8-41" tabindex="-1"></a><span class="co">#&gt; All 4 chains finished successfully.</span></span>
+<span id="cb8-42"><a href="#cb8-42" tabindex="-1"></a><span class="co">#&gt; Mean chain execution time: 1.6 seconds.</span></span>
+<span id="cb8-43"><a href="#cb8-43" tabindex="-1"></a><span class="co">#&gt; Total execution time: 1.8 seconds.</span></span>
+<span id="cb8-44"><a href="#cb8-44" tabindex="-1"></a></span>
+<span id="cb8-45"><a href="#cb8-45" tabindex="-1"></a>summ_cp <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">bind_rows</span>(</span>
+<span id="cb8-46"><a href="#cb8-46" tabindex="-1"></a>  <span class="fu">get_summaries</span>(fit_cp_J2, <span class="at">pars.interest =</span> base.pars) <span class="sc">%&gt;%</span></span>
+<span id="cb8-47"><a href="#cb8-47" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">prior =</span> <span class="st">&quot;CP&quot;</span>, <span class="at">J =</span> <span class="dv">2</span>),</span>
+<span id="cb8-48"><a href="#cb8-48" tabindex="-1"></a>  <span class="fu">get_summaries</span>(fit_cp_J5, <span class="at">pars.interest =</span> base.pars) <span class="sc">%&gt;%</span></span>
+<span id="cb8-49"><a href="#cb8-49" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">prior =</span> <span class="st">&quot;CP&quot;</span>, <span class="at">J =</span> <span class="dv">5</span>)</span>
+<span id="cb8-50"><a href="#cb8-50" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
+<span id="cb8-51"><a href="#cb8-51" tabindex="-1"></a>  <span class="fu">relocate</span>(J, prior, <span class="at">.before =</span> <span class="dv">1</span>)</span>
+<span id="cb8-52"><a href="#cb8-52" tabindex="-1"></a></span>
+<span id="cb8-53"><a href="#cb8-53" tabindex="-1"></a>summ_cp</span>
+<span id="cb8-54"><a href="#cb8-54" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 10</span></span>
+<span id="cb8-55"><a href="#cb8-55" tabindex="-1"></a><span class="co">#&gt;       J prior variable   mean    sd  q2.5 q97.5  rhat ess_bulk ess_tail</span></span>
+<span id="cb8-56"><a href="#cb8-56" tabindex="-1"></a><span class="co">#&gt;   &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;</span></span>
+<span id="cb8-57"><a href="#cb8-57" tabindex="-1"></a><span class="co">#&gt; 1     2 CP    treatment -0.28  0.13 -0.54 -0.04     1    7093.    7529.</span></span>
+<span id="cb8-58"><a href="#cb8-58" tabindex="-1"></a><span class="co">#&gt; 2     5 CP    treatment -0.29  0.12 -0.54 -0.05     1    6715.    7729.</span></span></code></pre></div>
+</div>
+</div>
+<div id="model-averaging-and-ensemble-inference" class="section level1">
+<h1>Model Averaging and Ensemble Inference</h1>
+<p>We combine the fitted PWEPH models using several model averaging
+approaches: Bayesian model averaging (BMA), pseudo‐BMA, pseudo‐BMA+
+(pseudo‐BMA with the Bayesian bootstrap), and stacking. In
+<strong>hdbayes</strong>, we provide the wrapper function
+<code>compute.ensemble.weights()</code> that use the
+<strong>loo</strong> package (<span class="citation">Vehtari et al.
+(2024)</span>) to compute the pseudo‐BMA, pseudo‐BMA+, and stacking
+weights. Posterior samples are then drawn from the resulting ensemble
+distribution to produce model-averaged estimates of the log hazard
+ratio.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="do">## Compute Model Weights</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>fit.list <span class="ot">&lt;-</span> <span class="fu">list</span>(fit_post_J2, fit_post_J5, fit_pp_J2, fit_pp_J5, fit_cp_J2, fit_cp_J5)</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a><span class="do">## BMA</span></span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>wts_bma <span class="ot">&lt;-</span> <span class="fu">compute.ensemble.weights</span>(</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>  <span class="at">fit.list =</span> fit.list,</span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>  <span class="at">type =</span> <span class="st">&quot;bma&quot;</span>,</span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a>  <span class="at">chains =</span> nchains, <span class="at">parallel_chains =</span> ncores,</span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a>  <span class="at">iter_warmup =</span> iter_warmup <span class="sc">+</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> iter_sampling,</span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>  <span class="at">refresh =</span> <span class="dv">0</span></span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a>)</span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a><span class="co">#&gt; Iteration: 1</span></span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a><span class="co">#&gt; Iteration: 2</span></span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a><span class="co">#&gt; Iteration: 3</span></span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a><span class="co">#&gt; Iteration: 4</span></span>
+<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a><span class="co">#&gt; Iteration: 1</span></span>
+<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a><span class="co">#&gt; Iteration: 2</span></span>
+<span id="cb9-18"><a href="#cb9-18" tabindex="-1"></a><span class="co">#&gt; Iteration: 3</span></span>
+<span id="cb9-19"><a href="#cb9-19" tabindex="-1"></a><span class="co">#&gt; Iteration: 4</span></span>
+<span id="cb9-20"><a href="#cb9-20" tabindex="-1"></a><span class="co">#&gt; Iteration: 1</span></span>
+<span id="cb9-21"><a href="#cb9-21" tabindex="-1"></a><span class="co">#&gt; Iteration: 2</span></span>
+<span id="cb9-22"><a href="#cb9-22" tabindex="-1"></a><span class="co">#&gt; Iteration: 3</span></span>
+<span id="cb9-23"><a href="#cb9-23" tabindex="-1"></a><span class="co">#&gt; Iteration: 4</span></span>
+<span id="cb9-24"><a href="#cb9-24" tabindex="-1"></a><span class="co">#&gt; Running MCMC with 4 parallel chains...</span></span>
+<span id="cb9-25"><a href="#cb9-25" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-26"><a href="#cb9-26" tabindex="-1"></a><span class="co">#&gt; Chain 1 finished in 0.5 seconds.</span></span>
+<span id="cb9-27"><a href="#cb9-27" tabindex="-1"></a><span class="co">#&gt; Chain 2 finished in 0.5 seconds.</span></span>
+<span id="cb9-28"><a href="#cb9-28" tabindex="-1"></a><span class="co">#&gt; Chain 3 finished in 0.5 seconds.</span></span>
+<span id="cb9-29"><a href="#cb9-29" tabindex="-1"></a><span class="co">#&gt; Chain 4 finished in 0.5 seconds.</span></span>
+<span id="cb9-30"><a href="#cb9-30" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-31"><a href="#cb9-31" tabindex="-1"></a><span class="co">#&gt; All 4 chains finished successfully.</span></span>
+<span id="cb9-32"><a href="#cb9-32" tabindex="-1"></a><span class="co">#&gt; Mean chain execution time: 0.5 seconds.</span></span>
+<span id="cb9-33"><a href="#cb9-33" tabindex="-1"></a><span class="co">#&gt; Total execution time: 0.6 seconds.</span></span>
+<span id="cb9-34"><a href="#cb9-34" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-35"><a href="#cb9-35" tabindex="-1"></a><span class="co">#&gt; Iteration: 1</span></span>
+<span id="cb9-36"><a href="#cb9-36" tabindex="-1"></a><span class="co">#&gt; Iteration: 2</span></span>
+<span id="cb9-37"><a href="#cb9-37" tabindex="-1"></a><span class="co">#&gt; Iteration: 3</span></span>
+<span id="cb9-38"><a href="#cb9-38" tabindex="-1"></a><span class="co">#&gt; Iteration: 4</span></span>
+<span id="cb9-39"><a href="#cb9-39" tabindex="-1"></a><span class="co">#&gt; Iteration: 1</span></span>
+<span id="cb9-40"><a href="#cb9-40" tabindex="-1"></a><span class="co">#&gt; Iteration: 2</span></span>
+<span id="cb9-41"><a href="#cb9-41" tabindex="-1"></a><span class="co">#&gt; Iteration: 3</span></span>
+<span id="cb9-42"><a href="#cb9-42" tabindex="-1"></a><span class="co">#&gt; Iteration: 4</span></span>
+<span id="cb9-43"><a href="#cb9-43" tabindex="-1"></a><span class="co">#&gt; Running MCMC with 4 parallel chains...</span></span>
+<span id="cb9-44"><a href="#cb9-44" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-45"><a href="#cb9-45" tabindex="-1"></a><span class="co">#&gt; Chain 1 finished in 0.6 seconds.</span></span>
+<span id="cb9-46"><a href="#cb9-46" tabindex="-1"></a><span class="co">#&gt; Chain 2 finished in 0.6 seconds.</span></span>
+<span id="cb9-47"><a href="#cb9-47" tabindex="-1"></a><span class="co">#&gt; Chain 3 finished in 0.6 seconds.</span></span>
+<span id="cb9-48"><a href="#cb9-48" tabindex="-1"></a><span class="co">#&gt; Chain 4 finished in 0.6 seconds.</span></span>
+<span id="cb9-49"><a href="#cb9-49" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-50"><a href="#cb9-50" tabindex="-1"></a><span class="co">#&gt; All 4 chains finished successfully.</span></span>
+<span id="cb9-51"><a href="#cb9-51" tabindex="-1"></a><span class="co">#&gt; Mean chain execution time: 0.6 seconds.</span></span>
+<span id="cb9-52"><a href="#cb9-52" tabindex="-1"></a><span class="co">#&gt; Total execution time: 0.7 seconds.</span></span>
+<span id="cb9-53"><a href="#cb9-53" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-54"><a href="#cb9-54" tabindex="-1"></a><span class="co">#&gt; Iteration: 1</span></span>
+<span id="cb9-55"><a href="#cb9-55" tabindex="-1"></a><span class="co">#&gt; Iteration: 2</span></span>
+<span id="cb9-56"><a href="#cb9-56" tabindex="-1"></a><span class="co">#&gt; Iteration: 3</span></span>
+<span id="cb9-57"><a href="#cb9-57" tabindex="-1"></a><span class="co">#&gt; Iteration: 4</span></span>
+<span id="cb9-58"><a href="#cb9-58" tabindex="-1"></a><span class="co">#&gt; Iteration: 5</span></span>
+<span id="cb9-59"><a href="#cb9-59" tabindex="-1"></a><span class="co">#&gt; Iteration: 1</span></span>
+<span id="cb9-60"><a href="#cb9-60" tabindex="-1"></a><span class="co">#&gt; Iteration: 2</span></span>
+<span id="cb9-61"><a href="#cb9-61" tabindex="-1"></a><span class="co">#&gt; Iteration: 3</span></span>
+<span id="cb9-62"><a href="#cb9-62" tabindex="-1"></a><span class="co">#&gt; Iteration: 4</span></span>
+<span id="cb9-63"><a href="#cb9-63" tabindex="-1"></a><span class="co">#&gt; Iteration: 5</span></span>
+<span id="cb9-64"><a href="#cb9-64" tabindex="-1"></a><span class="co">#&gt; Running MCMC with 4 parallel chains...</span></span>
+<span id="cb9-65"><a href="#cb9-65" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-66"><a href="#cb9-66" tabindex="-1"></a><span class="co">#&gt; Chain 2 finished in 0.7 seconds.</span></span>
+<span id="cb9-67"><a href="#cb9-67" tabindex="-1"></a><span class="co">#&gt; Chain 3 finished in 0.6 seconds.</span></span>
+<span id="cb9-68"><a href="#cb9-68" tabindex="-1"></a><span class="co">#&gt; Chain 1 finished in 0.8 seconds.</span></span>
+<span id="cb9-69"><a href="#cb9-69" tabindex="-1"></a><span class="co">#&gt; Chain 4 finished in 0.7 seconds.</span></span>
+<span id="cb9-70"><a href="#cb9-70" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-71"><a href="#cb9-71" tabindex="-1"></a><span class="co">#&gt; All 4 chains finished successfully.</span></span>
+<span id="cb9-72"><a href="#cb9-72" tabindex="-1"></a><span class="co">#&gt; Mean chain execution time: 0.7 seconds.</span></span>
+<span id="cb9-73"><a href="#cb9-73" tabindex="-1"></a><span class="co">#&gt; Total execution time: 0.8 seconds.</span></span>
+<span id="cb9-74"><a href="#cb9-74" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-75"><a href="#cb9-75" tabindex="-1"></a><span class="co">#&gt; Iteration: 1</span></span>
+<span id="cb9-76"><a href="#cb9-76" tabindex="-1"></a><span class="co">#&gt; Iteration: 2</span></span>
+<span id="cb9-77"><a href="#cb9-77" tabindex="-1"></a><span class="co">#&gt; Iteration: 3</span></span>
+<span id="cb9-78"><a href="#cb9-78" tabindex="-1"></a><span class="co">#&gt; Iteration: 4</span></span>
+<span id="cb9-79"><a href="#cb9-79" tabindex="-1"></a><span class="co">#&gt; Iteration: 5</span></span>
+<span id="cb9-80"><a href="#cb9-80" tabindex="-1"></a><span class="co">#&gt; Iteration: 1</span></span>
+<span id="cb9-81"><a href="#cb9-81" tabindex="-1"></a><span class="co">#&gt; Iteration: 2</span></span>
+<span id="cb9-82"><a href="#cb9-82" tabindex="-1"></a><span class="co">#&gt; Iteration: 3</span></span>
+<span id="cb9-83"><a href="#cb9-83" tabindex="-1"></a><span class="co">#&gt; Iteration: 4</span></span>
+<span id="cb9-84"><a href="#cb9-84" tabindex="-1"></a><span class="co">#&gt; Running MCMC with 4 parallel chains...</span></span>
+<span id="cb9-85"><a href="#cb9-85" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-86"><a href="#cb9-86" tabindex="-1"></a><span class="co">#&gt; Chain 1 finished in 0.7 seconds.</span></span>
+<span id="cb9-87"><a href="#cb9-87" tabindex="-1"></a><span class="co">#&gt; Chain 4 finished in 0.7 seconds.</span></span>
+<span id="cb9-88"><a href="#cb9-88" tabindex="-1"></a><span class="co">#&gt; Chain 3 finished in 0.8 seconds.</span></span>
+<span id="cb9-89"><a href="#cb9-89" tabindex="-1"></a><span class="co">#&gt; Chain 2 finished in 1.0 seconds.</span></span>
+<span id="cb9-90"><a href="#cb9-90" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-91"><a href="#cb9-91" tabindex="-1"></a><span class="co">#&gt; All 4 chains finished successfully.</span></span>
+<span id="cb9-92"><a href="#cb9-92" tabindex="-1"></a><span class="co">#&gt; Mean chain execution time: 0.8 seconds.</span></span>
+<span id="cb9-93"><a href="#cb9-93" tabindex="-1"></a><span class="co">#&gt; Total execution time: 1.1 seconds.</span></span>
+<span id="cb9-94"><a href="#cb9-94" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-95"><a href="#cb9-95" tabindex="-1"></a><span class="co">#&gt; Iteration: 1</span></span>
+<span id="cb9-96"><a href="#cb9-96" tabindex="-1"></a><span class="co">#&gt; Iteration: 2</span></span>
+<span id="cb9-97"><a href="#cb9-97" tabindex="-1"></a><span class="co">#&gt; Iteration: 3</span></span>
+<span id="cb9-98"><a href="#cb9-98" tabindex="-1"></a><span class="co">#&gt; Iteration: 4</span></span>
+<span id="cb9-99"><a href="#cb9-99" tabindex="-1"></a><span class="co">#&gt; Iteration: 5</span></span>
+<span id="cb9-100"><a href="#cb9-100" tabindex="-1"></a></span>
+<span id="cb9-101"><a href="#cb9-101" tabindex="-1"></a><span class="do">## Pseudo-BMA</span></span>
+<span id="cb9-102"><a href="#cb9-102" tabindex="-1"></a>wts_pseudoBMA <span class="ot">&lt;-</span> <span class="fu">compute.ensemble.weights</span>(</span>
+<span id="cb9-103"><a href="#cb9-103" tabindex="-1"></a>  <span class="at">fit.list =</span> fit.list,</span>
+<span id="cb9-104"><a href="#cb9-104" tabindex="-1"></a>  <span class="at">type =</span> <span class="st">&quot;pseudobma&quot;</span>,</span>
+<span id="cb9-105"><a href="#cb9-105" tabindex="-1"></a>  <span class="at">loo.args =</span> <span class="fu">list</span>(<span class="at">cores =</span> ncores),</span>
+<span id="cb9-106"><a href="#cb9-106" tabindex="-1"></a>  <span class="at">loo.wts.args =</span> <span class="fu">list</span>(<span class="at">BB =</span> <span class="cn">FALSE</span>, <span class="at">cores =</span> ncores)</span>
+<span id="cb9-107"><a href="#cb9-107" tabindex="-1"></a>)</span>
+<span id="cb9-108"><a href="#cb9-108" tabindex="-1"></a></span>
+<span id="cb9-109"><a href="#cb9-109" tabindex="-1"></a><span class="do">## Pseudo-BMA+</span></span>
+<span id="cb9-110"><a href="#cb9-110" tabindex="-1"></a>wts_pseudoBMA_BB <span class="ot">&lt;-</span> <span class="fu">compute.ensemble.weights</span>(</span>
+<span id="cb9-111"><a href="#cb9-111" tabindex="-1"></a>  <span class="at">fit.list =</span> fit.list,</span>
+<span id="cb9-112"><a href="#cb9-112" tabindex="-1"></a>  <span class="at">type =</span> <span class="st">&quot;pseudobma+&quot;</span>,</span>
+<span id="cb9-113"><a href="#cb9-113" tabindex="-1"></a>  <span class="at">loo.args =</span> <span class="fu">list</span>(<span class="at">cores =</span> ncores),</span>
+<span id="cb9-114"><a href="#cb9-114" tabindex="-1"></a>  <span class="at">loo.wts.args =</span> <span class="fu">list</span>(<span class="at">BB =</span> <span class="cn">TRUE</span>, <span class="at">cores =</span> ncores)</span>
+<span id="cb9-115"><a href="#cb9-115" tabindex="-1"></a>)</span>
+<span id="cb9-116"><a href="#cb9-116" tabindex="-1"></a></span>
+<span id="cb9-117"><a href="#cb9-117" tabindex="-1"></a><span class="do">## Stacking</span></span>
+<span id="cb9-118"><a href="#cb9-118" tabindex="-1"></a>wts_stacking <span class="ot">&lt;-</span> <span class="fu">compute.ensemble.weights</span>(</span>
+<span id="cb9-119"><a href="#cb9-119" tabindex="-1"></a>  <span class="at">fit.list =</span> fit.list,</span>
+<span id="cb9-120"><a href="#cb9-120" tabindex="-1"></a>  <span class="at">type =</span> <span class="st">&quot;stacking&quot;</span>,</span>
+<span id="cb9-121"><a href="#cb9-121" tabindex="-1"></a>  <span class="at">loo.args =</span> <span class="fu">list</span>(<span class="at">cores =</span> ncores),</span>
+<span id="cb9-122"><a href="#cb9-122" tabindex="-1"></a>  <span class="at">loo.wts.args =</span> <span class="fu">list</span>(<span class="at">cores =</span> ncores)</span>
+<span id="cb9-123"><a href="#cb9-123" tabindex="-1"></a>)</span></code></pre></div>
+<p>The table below reports point estimates, (posterior) standard
+deviations, and <span class="math inline">\(95\%\)</span> credible
+intervals (Bayesian) or confidence intervals (frequentist) for the log
+hazard ratio from the Cox PH model and PWEPH models with <span class="math inline">\(J = 2\)</span> and <span class="math inline">\(J =
+5\)</span> intervals under three prior specifications: reference, power
+prior (PP), and commensurate prior (CP). For the Bayesian models, model
+averaging weights from BMA, pseudo-BMA, pseudo-BMA+, and stacking are
+also provided.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>estim.tab <span class="ot">&lt;-</span> <span class="fu">rbind</span>(summ_ref, summ_pp, summ_cp)</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>estim.tab<span class="sc">$</span>J <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">&quot;PWEPH (J = &quot;</span>, estim.tab<span class="sc">$</span>J, <span class="st">&quot;)&quot;</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="fu">colnames</span>(estim.tab)[<span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="st">&quot;model&quot;</span></span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>estim.tab <span class="ot">&lt;-</span> estim.tab[, <span class="fu">c</span>(<span class="st">&quot;model&quot;</span>, <span class="st">&quot;prior&quot;</span>, <span class="st">&quot;mean&quot;</span>, <span class="st">&quot;sd&quot;</span>, <span class="st">&quot;q2.5&quot;</span>, <span class="st">&quot;q97.5&quot;</span>)]</span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a></span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>estim.tab <span class="ot">&lt;-</span> <span class="fu">rbind</span>(</span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a>  <span class="fu">c</span>(<span class="st">&quot;Cox PH&quot;</span>, <span class="st">&quot;MLE&quot;</span>, <span class="fu">round</span>(<span class="fu">as.numeric</span>(fit.mle.cur<span class="sc">$</span>coefficients), <span class="dv">2</span>),</span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a>    <span class="fu">round</span>(<span class="fu">summary</span>(fit.mle.cur)<span class="sc">$</span>coefficients[, <span class="st">&quot;se(coef)&quot;</span>], <span class="dv">2</span>),</span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a>    <span class="fu">round</span>(<span class="fu">suppressMessages</span>(<span class="fu">confint</span>(fit.mle.cur))[<span class="dv">1</span>], <span class="dv">2</span>),</span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a>    <span class="fu">round</span>(<span class="fu">suppressMessages</span>(<span class="fu">confint</span>(fit.mle.cur))[<span class="dv">2</span>], <span class="dv">2</span>)),</span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a>  estim.tab</span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
+<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a>  <span class="fu">as.data.frame</span>()</span>
+<span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a></span>
+<span id="cb10-15"><a href="#cb10-15" tabindex="-1"></a>tab               <span class="ot">&lt;-</span> estim.tab</span>
+<span id="cb10-16"><a href="#cb10-16" tabindex="-1"></a>tab<span class="sc">$</span>BMA           <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;--&quot;</span>, <span class="fu">round</span>(wts_bma<span class="sc">$</span>weights, <span class="dv">2</span>))</span>
+<span id="cb10-17"><a href="#cb10-17" tabindex="-1"></a>tab<span class="sc">$</span><span class="st">`</span><span class="at">Pseudo-BMA</span><span class="st">`</span>  <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;--&quot;</span>, <span class="fu">round</span>(wts_pseudoBMA<span class="sc">$</span>weights, <span class="dv">2</span>))</span>
+<span id="cb10-18"><a href="#cb10-18" tabindex="-1"></a>tab<span class="sc">$</span><span class="st">`</span><span class="at">Pseudo-BMA+</span><span class="st">`</span> <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;--&quot;</span>, <span class="fu">round</span>(wts_pseudoBMA_BB<span class="sc">$</span>weights, <span class="dv">2</span>))</span>
+<span id="cb10-19"><a href="#cb10-19" tabindex="-1"></a>tab<span class="sc">$</span>Stacking      <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;--&quot;</span>, <span class="fu">round</span>(wts_stacking<span class="sc">$</span>weights, <span class="dv">2</span>))</span>
+<span id="cb10-20"><a href="#cb10-20" tabindex="-1"></a></span>
+<span id="cb10-21"><a href="#cb10-21" tabindex="-1"></a>tab</span>
+<span id="cb10-22"><a href="#cb10-22" tabindex="-1"></a><span class="co">#&gt;           model     prior  mean   sd  q2.5 q97.5 BMA Pseudo-BMA Pseudo-BMA+ Stacking</span></span>
+<span id="cb10-23"><a href="#cb10-23" tabindex="-1"></a><span class="co">#&gt; 1        Cox PH       MLE -0.24 0.13 -0.49  0.01  --         --          --       --</span></span>
+<span id="cb10-24"><a href="#cb10-24" tabindex="-1"></a><span class="co">#&gt; 2 PWEPH (J = 2) Reference -0.27 0.13 -0.52 -0.02   0          0           0        0</span></span>
+<span id="cb10-25"><a href="#cb10-25" tabindex="-1"></a><span class="co">#&gt; 3 PWEPH (J = 5) Reference -0.29 0.13 -0.54 -0.03   0       0.28        0.27     0.24</span></span>
+<span id="cb10-26"><a href="#cb10-26" tabindex="-1"></a><span class="co">#&gt; 4 PWEPH (J = 2)        PP -0.32 0.11 -0.53  -0.1   0          0           0        0</span></span>
+<span id="cb10-27"><a href="#cb10-27" tabindex="-1"></a><span class="co">#&gt; 5 PWEPH (J = 5)        PP -0.32 0.11 -0.53  -0.1   1       0.44        0.46     0.72</span></span>
+<span id="cb10-28"><a href="#cb10-28" tabindex="-1"></a><span class="co">#&gt; 6 PWEPH (J = 2)        CP -0.28 0.13 -0.54 -0.04   0          0           0     0.04</span></span>
+<span id="cb10-29"><a href="#cb10-29" tabindex="-1"></a><span class="co">#&gt; 7 PWEPH (J = 5)        CP -0.29 0.12 -0.54 -0.05   0       0.28        0.27        0</span></span></code></pre></div>
+<div id="posterior-summaries-from-individual-and-ensemble-methods" class="section level2">
+<h2>Posterior Summaries from Individual and Ensemble Methods</h2>
+<p>Building on the results in the previous table, we now include
+model‐averaged estimates obtained by combining the Bayesian models using
+BMA, pseudo‐BMA, pseudo‐BMA+, and stacking. For each ensemble method,
+the table reports the posterior mean, posterior standard deviation, and
+<span class="math inline">\(95\%\)</span> credible interval for the log
+hazard ratio, alongside the corresponding results from the individual
+models shown earlier.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a>samples.mtx <span class="ot">&lt;-</span> <span class="fu">lapply</span>(fit.list, <span class="cf">function</span>(f){</span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>  f[[<span class="st">&quot;treatment&quot;</span>]]</span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>})</span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a>samples.mtx <span class="ot">&lt;-</span> <span class="fu">do.call</span>(cbind, samples.mtx)</span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a></span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a>ensemble.bma          <span class="ot">&lt;-</span> <span class="fu">sample.ensemble</span>(wts_bma<span class="sc">$</span>weights, samples.mtx)</span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a>ensemble.pseudoBMA    <span class="ot">&lt;-</span> <span class="fu">sample.ensemble</span>(wts_pseudoBMA<span class="sc">$</span>weights, samples.mtx)</span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a>ensemble.pseudoBMA_BB <span class="ot">&lt;-</span> <span class="fu">sample.ensemble</span>(wts_pseudoBMA_BB<span class="sc">$</span>weights, samples.mtx)</span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a>ensemble.stacking     <span class="ot">&lt;-</span> <span class="fu">sample.ensemble</span>(wts_stacking<span class="sc">$</span>weights, samples.mtx)</span>
+<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a></span>
+<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a><span class="do">## summarize ensemble posterior samples</span></span>
+<span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a>summ_ensemble <span class="ot">&lt;-</span> <span class="cf">function</span>(samples, method) {</span>
+<span id="cb11-13"><a href="#cb11-13" tabindex="-1"></a>  mean_val <span class="ot">&lt;-</span> <span class="fu">mean</span>(samples)</span>
+<span id="cb11-14"><a href="#cb11-14" tabindex="-1"></a>  sd_val   <span class="ot">&lt;-</span> <span class="fu">sd</span>(samples)</span>
+<span id="cb11-15"><a href="#cb11-15" tabindex="-1"></a>  ci_vals  <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>( <span class="fu">quantile2</span>(samples, <span class="at">probs =</span> <span class="fu">c</span>(<span class="fl">0.025</span>, <span class="fl">0.975</span>)) )</span>
+<span id="cb11-16"><a href="#cb11-16" tabindex="-1"></a></span>
+<span id="cb11-17"><a href="#cb11-17" tabindex="-1"></a>  <span class="fu">data.frame</span>(</span>
+<span id="cb11-18"><a href="#cb11-18" tabindex="-1"></a>    <span class="at">model  =</span> <span class="fu">paste0</span>(<span class="st">&quot;Ensemble (&quot;</span>, method, <span class="st">&quot;)&quot;</span>),</span>
+<span id="cb11-19"><a href="#cb11-19" tabindex="-1"></a>    <span class="at">prior  =</span> <span class="st">&quot;--&quot;</span>,</span>
+<span id="cb11-20"><a href="#cb11-20" tabindex="-1"></a>    <span class="at">mean   =</span> <span class="fu">round</span>(mean_val, <span class="dv">2</span>),</span>
+<span id="cb11-21"><a href="#cb11-21" tabindex="-1"></a>    <span class="at">sd     =</span> <span class="fu">round</span>(sd_val, <span class="dv">2</span>),</span>
+<span id="cb11-22"><a href="#cb11-22" tabindex="-1"></a>    <span class="at">q2.5   =</span> <span class="fu">round</span>(ci_vals[<span class="dv">1</span>], <span class="dv">2</span>),</span>
+<span id="cb11-23"><a href="#cb11-23" tabindex="-1"></a>    <span class="at">q97.5  =</span> <span class="fu">round</span>(ci_vals[<span class="dv">2</span>], <span class="dv">2</span>)</span>
+<span id="cb11-24"><a href="#cb11-24" tabindex="-1"></a>  )</span>
+<span id="cb11-25"><a href="#cb11-25" tabindex="-1"></a>}</span>
+<span id="cb11-26"><a href="#cb11-26" tabindex="-1"></a></span>
+<span id="cb11-27"><a href="#cb11-27" tabindex="-1"></a><span class="do">## create table for each ensemble method</span></span>
+<span id="cb11-28"><a href="#cb11-28" tabindex="-1"></a>estim.ens <span class="ot">&lt;-</span> <span class="fu">rbind</span>(</span>
+<span id="cb11-29"><a href="#cb11-29" tabindex="-1"></a>  <span class="fu">summ_ensemble</span>(ensemble.bma,          <span class="st">&quot;BMA&quot;</span>),</span>
+<span id="cb11-30"><a href="#cb11-30" tabindex="-1"></a>  <span class="fu">summ_ensemble</span>(ensemble.pseudoBMA,    <span class="st">&quot;Pseudo-BMA&quot;</span>),</span>
+<span id="cb11-31"><a href="#cb11-31" tabindex="-1"></a>  <span class="fu">summ_ensemble</span>(ensemble.pseudoBMA_BB, <span class="st">&quot;Pseudo-BMA+&quot;</span>),</span>
+<span id="cb11-32"><a href="#cb11-32" tabindex="-1"></a>  <span class="fu">summ_ensemble</span>(ensemble.stacking,     <span class="st">&quot;Stacking&quot;</span>)</span>
+<span id="cb11-33"><a href="#cb11-33" tabindex="-1"></a>)</span>
+<span id="cb11-34"><a href="#cb11-34" tabindex="-1"></a></span>
+<span id="cb11-35"><a href="#cb11-35" tabindex="-1"></a><span class="do">## combine with previous table</span></span>
+<span id="cb11-36"><a href="#cb11-36" tabindex="-1"></a>estim.combined <span class="ot">&lt;-</span> <span class="fu">rbind</span>(estim.tab, estim.ens) <span class="sc">%&gt;%</span></span>
+<span id="cb11-37"><a href="#cb11-37" tabindex="-1"></a>  <span class="fu">as.data.frame</span>()</span>
+<span id="cb11-38"><a href="#cb11-38" tabindex="-1"></a>estim.combined</span>
+<span id="cb11-39"><a href="#cb11-39" tabindex="-1"></a><span class="co">#&gt;                     model     prior  mean   sd  q2.5 q97.5</span></span>
+<span id="cb11-40"><a href="#cb11-40" tabindex="-1"></a><span class="co">#&gt; 1                  Cox PH       MLE -0.24 0.13 -0.49  0.01</span></span>
+<span id="cb11-41"><a href="#cb11-41" tabindex="-1"></a><span class="co">#&gt; 2           PWEPH (J = 2) Reference -0.27 0.13 -0.52 -0.02</span></span>
+<span id="cb11-42"><a href="#cb11-42" tabindex="-1"></a><span class="co">#&gt; 3           PWEPH (J = 5) Reference -0.29 0.13 -0.54 -0.03</span></span>
+<span id="cb11-43"><a href="#cb11-43" tabindex="-1"></a><span class="co">#&gt; 4           PWEPH (J = 2)        PP -0.32 0.11 -0.53  -0.1</span></span>
+<span id="cb11-44"><a href="#cb11-44" tabindex="-1"></a><span class="co">#&gt; 5           PWEPH (J = 5)        PP -0.32 0.11 -0.53  -0.1</span></span>
+<span id="cb11-45"><a href="#cb11-45" tabindex="-1"></a><span class="co">#&gt; 6           PWEPH (J = 2)        CP -0.28 0.13 -0.54 -0.04</span></span>
+<span id="cb11-46"><a href="#cb11-46" tabindex="-1"></a><span class="co">#&gt; 7           PWEPH (J = 5)        CP -0.29 0.12 -0.54 -0.05</span></span>
+<span id="cb11-47"><a href="#cb11-47" tabindex="-1"></a><span class="co">#&gt; 8          Ensemble (BMA)        -- -0.32 0.11 -0.53  -0.1</span></span>
+<span id="cb11-48"><a href="#cb11-48" tabindex="-1"></a><span class="co">#&gt; 9   Ensemble (Pseudo-BMA)        --  -0.3 0.12 -0.54 -0.07</span></span>
+<span id="cb11-49"><a href="#cb11-49" tabindex="-1"></a><span class="co">#&gt; 10 Ensemble (Pseudo-BMA+)        --  -0.3 0.12 -0.53 -0.07</span></span>
+<span id="cb11-50"><a href="#cb11-50" tabindex="-1"></a><span class="co">#&gt; 11    Ensemble (Stacking)        -- -0.31 0.12 -0.53 -0.08</span></span></code></pre></div>
+</div>
+<div id="posterior-densities-from-ensemble-methods" class="section level2">
+<h2>Posterior Densities from Ensemble Methods</h2>
+<p>We compare the posterior densities of the log hazard ratio obtained
+from the four ensemble methods, BMA, pseudo‐BMA, pseudo‐BMA+, and
+stacking, alongside the maximum likelihood estimate (MLE) from fitting
+the Cox PH model to the current data (shown as a dashed line). The
+posterior densities are largely similar across methods, suggesting that,
+in this example, the choice of ensemble weighting approach has little
+influence on the resulting posterior distribution.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>data.ens <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>  <span class="at">logHR =</span> <span class="fu">c</span>(ensemble.bma, ensemble.pseudoBMA, ensemble.pseudoBMA_BB, ensemble.stacking),</span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>  <span class="at">method =</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">&quot;Ensemble (BMA)&quot;</span>, <span class="st">&quot;Ensemble (Pseudo-BMA)&quot;</span>, <span class="st">&quot;Ensemble (pseudo-BMA+)&quot;</span>,</span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>                   <span class="st">&quot;Ensemble (Stacking)&quot;</span>), <span class="at">each =</span> <span class="fu">length</span>(ensemble.bma)))</span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a></span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a>mle_curr <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">coef</span>(fit.mle.cur)[<span class="st">&quot;treatment&quot;</span>])</span>
+<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a></span>
+<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a><span class="fu">ggplot</span>(data.ens, <span class="fu">aes</span>(<span class="at">x =</span> logHR, <span class="at">colour =</span> method)) <span class="sc">+</span></span>
+<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a>  <span class="fu">geom_density</span>(<span class="at">linewidth =</span> <span class="fl">0.9</span>, <span class="at">adjust =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> mle_curr, <span class="at">linetype =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb12-11"><a href="#cb12-11" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb12-12"><a href="#cb12-12" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">&quot;Posterior densities of log HR from ensemble methods&quot;</span>,</span>
+<span id="cb12-13"><a href="#cb12-13" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">&quot;Dashed line = Cox PH MLE&quot;</span>,</span>
+<span id="cb12-14"><a href="#cb12-14" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">&quot;Log hazard ratio (treatment vs control)&quot;</span>,</span>
+<span id="cb12-15"><a href="#cb12-15" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">&quot;Posterior density&quot;</span>,</span>
+<span id="cb12-16"><a href="#cb12-16" tabindex="-1"></a>    <span class="at">colour =</span> <span class="st">&quot;Ensemble method&quot;</span></span>
+<span id="cb12-17"><a href="#cb12-17" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb12-18"><a href="#cb12-18" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">12</span>) <span class="sc">+</span></span>
+<span id="cb12-19"><a href="#cb12-19" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb12-20"><a href="#cb12-20" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="st">&quot;bottom&quot;</span>,</span>
+<span id="cb12-21"><a href="#cb12-21" tabindex="-1"></a>    <span class="at">legend.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">10</span>),</span>
+<span id="cb12-22"><a href="#cb12-22" tabindex="-1"></a>    <span class="at">legend.text  =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">9</span>)</span>
+<span id="cb12-23"><a href="#cb12-23" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb12-24"><a href="#cb12-24" tabindex="-1"></a>  <span class="fu">guides</span>(<span class="at">colour =</span> <span class="fu">guide_legend</span>(<span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)) <span class="sc">+</span></span>
+<span id="cb12-25"><a href="#cb12-25" tabindex="-1"></a>  <span class="fu">scale_color_tableau</span>(<span class="st">&quot;Superfishel Stone&quot;</span>)</span></code></pre></div>
+<div class="figure" style="text-align: center">
+<p><img role="img" aria-label="plot of posterior densities from ensemble methods" src="data:image/png;base64,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" alt="plot of posterior densities from ensemble methods" width="500" height="380" /></p>
+</div>
+</div>
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1 class="unnumbered">References</h1>
+<div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
+<div id="ref-Hobbs2012" class="csl-entry">
+Hobbs, Brian P, Daniel J Sargent, and Bradley P Carlin. 2012.
+<span>“Commensurate Priors for Incorporating Historical Information in
+Clinical Trials Using General and Generalized Linear Models.”</span>
+<em>Bayesian Analysis (Online)</em> 7 (3): 639.
+</div>
+<div id="ref-Ibrahim2000" class="csl-entry">
+Ibrahim, Joseph G, and Ming-Hui Chen. 2000. <span>“Power Prior
+Distributions for Regression Models.”</span> <em>Statistical
+Science</em>, 46–60.
+</div>
+<div id="ref-madiganModelSelectionAccounting1994" class="csl-entry">
+Madigan, David, and Adrian E. Raftery. 1994. <span>“Model Selection and
+Accounting for Model Uncertainty in Graphical Models Using <span class="nocase">Occam’s</span> Window.”</span> <em>Journal of the
+American Statistical Association</em> 89 (428): 1535–46. <a href="https://doi.org/10.2307/2291017">https://doi.org/10.2307/2291017</a>.
+</div>
+<div id="ref-loo_package" class="csl-entry">
+Vehtari, Aki, Jonah Gabry, Mans Magnusson, Yuling Yao, Paul-Christian
+Bürkner, Topi Paananen, and Andrew Gelman. 2024. <em>Loo: Efficient
+Leave-One-Out Cross-Validation and WAIC for <span>Bayesian</span>
+Models</em>. <a href="https://mc-stan.org/loo/">https://mc-stan.org/loo/</a>.
+</div>
+<div id="ref-yaoUsingStackingAverage2018" class="csl-entry">
+Yao, Yuling, Aki Vehtari, Daniel Simpson, and Andrew Gelman. 2018.
+<span>“Using Stacking to Average <span>Bayesian</span> Predictive
+Distributions (with Discussion).”</span> <em>Bayesian Analysis</em> 13
+(3): 917–1007. <a href="https://doi.org/10.1214/17-BA1091">https://doi.org/10.1214/17-BA1091</a>.
+</div>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

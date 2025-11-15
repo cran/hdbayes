@@ -30,7 +30,7 @@
 #'  The function returns a `list` with the following objects
 #'
 #'  \describe{
-#'    \item{model}{"LEAP"}
+#'    \item{model}{"glm_leap"}
 #'
 #'    \item{logml}{the estimated logarithm of the marginal likelihood}
 #'
@@ -48,7 +48,7 @@
 #'  }
 #'
 #' @references
-#'  Alt, E. M., Chang, X., Jiang, X., Liu, Q., Mo, M., Xia, H. M., and Ibrahim, J. G. (2023). LEAP: The latent exchangeability prior for borrowing information from historical data. arXiv preprint.
+#'  Alt, E. M., Chang, X., Jiang, X., Liu, Q., Mo, M., Xia, H. M., and Ibrahim, J. G. (2024). LEAP: The latent exchangeability prior for borrowing information from historical data. Biometrics, 80(3).
 #'
 #'  Gronau, Q. F., Singmann, H., and Wagenmakers, E.-J. (2020). bridgesampling: An r package for estimating normalizing constants. Journal of Statistical Software, 92(10).
 #'
@@ -85,18 +85,14 @@ glm.logml.leap = function(
 ) {
   stan.data = attr(post.samples, 'data')
   K         = stan.data$K
-  if ( K == 1 ){
-    stop("data.list should include at least one historical data set")
-  }
 
   d        = as.matrix(post.samples)
-
   p        = stan.data$p
   oldnames = paste0("betaMat[", rep(1:p, K), ',', rep(1:K, each = p), "]")
   if ( stan.data$dist > 2 ) {
     oldnames = c(oldnames, paste0( 'dispersion[', 1:K, ']' ))
   }
-  oldnames = c(oldnames, "gamma")
+  oldnames = c(oldnames, "logit_gamma")
   if ( K > 2 ){
     oldnames = c(oldnames, paste0("delta_raw[", 1:(K-2), "]"))
   }
@@ -104,6 +100,16 @@ glm.logml.leap = function(
 
   ## compute log normalizing constants (lognc) for half-normal prior on dispersion
   stan.data$lognc_disp  = sum( pnorm(0, mean = stan.data$disp_mean, sd = stan.data$disp_sd, lower.tail = F, log.p = T) )
+
+  ## compute log normalizing constants for logit(gamma)
+  gamma_shape1    = stan.data$conc[1]
+  gamma_shape2    = sum(stan.data$conc[2:K])
+  stan.data$lognc_logit_gamma = 0
+
+  if( stan.data$gamma_lower != 0 || stan.data$gamma_upper != 1 ) {
+    stan.data$lognc_logit_gamma = log( pbeta(stan.data$gamma_upper, shape1 = gamma_shape1, shape2 = gamma_shape2) -
+                                   pbeta(stan.data$gamma_lower, shape1 = gamma_shape1, shape2 = gamma_shape2) )
+  }
 
   ## log of the unnormalized posterior density function
   log_density = function(pars, data){
@@ -114,21 +120,22 @@ glm.logml.leap = function(
                             sd = as.numeric(data$sd_beta), log = T) )
     betaMat    = matrix(betaMat, nrow = p, ncol = K)
 
-    ## prior on gamma
+    ## prior on logit(gamma)
     conc         = data$conc
     gamma_shape1 = conc[1]
     gamma_shape2 = sum(conc[2:K])
-    gamma        = pars[["gamma"]]
-    probs        = c(gamma, 1 - gamma)
-    if ( gamma_shape1 != 1 || gamma_shape2 != 1 ){
-      prior_lp = prior_lp + dbeta(gamma, gamma_shape1, gamma_shape2, log = T)
-    }
+    logit_gamma  = pars[["logit_gamma"]]
+    log1m_gamma  = -log1p_exp(logit_gamma) # log(1 - gamma)
+    log_probs    = c(logit_gamma, 0) + log1m_gamma
+
+    prior_lp     = prior_lp + logit_beta_lp(logit_gamma, gamma_shape1, gamma_shape2) -
+      data$lognc_logit_gamma
 
     if( K > 2 ){
-      delta_raw = pars[paste0("delta_raw[", 1:(K-2), "]")]
+      delta_raw = as.numeric(pars[paste0("delta_raw[", 1:(K-2), "]")])
       delta_raw = c(delta_raw, 1 - sum(delta_raw))
       prior_lp  = prior_lp + dirichlet_lp(delta_raw, conc[2:K])
-      probs     = c(gamma, (1 - gamma) * delta_raw)
+      log_probs = c(logit_gamma, log(delta_raw)) + log1m_gamma
     }
 
     dist         = data$dist
@@ -141,7 +148,7 @@ glm.logml.leap = function(
       dispersion = rep(1.0, K)
     }
     ## historical data likelihood
-    prior_lp     = prior_lp  + glm_mixture_lp(data$y0, betaMat, dispersion, probs, data$X0, dist, link, data$offs0)
+    prior_lp     = prior_lp  + glm_mixture_lp(data$y0, betaMat, dispersion, log_probs, data$X0, dist, link, data$offs0)
     ## current data likelihood
     data_lp      = glm_lp(data$y, betaMat[, 1], data$X, dist, link, data$offs[,1], dispersion[1])
     return(data_lp + prior_lp)
@@ -153,8 +160,8 @@ glm.logml.leap = function(
     lb = c(lb, rep(0, K) )
     ub = c(ub, rep(Inf, K) )
   }
-  lb = c(lb, stan.data$gamma_lower)
-  ub = c(ub, stan.data$gamma_upper)
+  lb = c(lb, binomial('logit')$linkfun(stan.data$gamma_lower))
+  ub = c(ub, binomial('logit')$linkfun(stan.data$gamma_upper))
   if( K > 2 ){
     lb = c(lb, rep(0, K-2))
     ub = c(ub, rep(1, K-2))
@@ -203,7 +210,7 @@ glm.logml.leap = function(
   ## Return a list of model name, estimated log marginal likelihood, outputs from bridgesampling::bridge_sampler,
   ## the minimum estimated bulk effective sample size of the MCMC sampling, and the maximum Rhat
   res = list(
-    'model'        = "LEAP",
+    'model'        = "glm_leap",
     'logml'        = bs$logml - res.hist$lognc,
     'bs'           = bs,
     'bs.hist'      = res.hist$bs,

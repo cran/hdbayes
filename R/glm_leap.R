@@ -1,6 +1,7 @@
 #' Posterior of latent exchangeability prior (LEAP)
 #'
-#' Sample from the posterior distribution of a GLM using the latent exchangeability prior (LEAP) by Alt et al. (2023).
+#' Sample from the posterior distribution of a GLM using the latent exchangeability prior (LEAP) by Alt et al. (2024)
+#' <doi:10.1093/biomtc/ujae083>.
 #'
 #' The latent exchangeability prior (LEAP) discounts the historical data by identifying the most relevant individuals
 #' from the historical data. It is equivalent to a prior induced by the posterior of a finite mixture model for the
@@ -36,6 +37,11 @@
 #' @param disp.sd           a scalar or a vector whose dimension is equal to the number of classes (`K`) giving the scale
 #'                          parameters for the half-normal priors on the dispersion parameters. If a scalar is provided, same
 #'                          as for `disp.mean`. Defaults to a vector of 10s.
+#' @param gamma.lower       a scalar giving the lower bound for probability of subjects in historical data being exchangeable
+#'                          with subjects in current data. Defaults to 0.
+#' @param gamma.upper       a scalar giving the upper bound for probability of subjects in historical data being exchangeable
+#'                          with subjects in current data. Defaults to 1.
+#' @param get.loglik        whether to generate log-likelihood matrix. Defaults to FALSE.
 #' @param iter_warmup       number of warmup iterations to run per chain. Defaults to 1000. See the argument `iter_warmup` in
 #'                          `sample()` method in cmdstanr package.
 #' @param iter_sampling     number of post-warmup iterations to run per chain. Defaults to 1000. See the argument `iter_sampling`
@@ -45,11 +51,16 @@
 #' @param ...               arguments passed to `sample()` method in cmdstanr package (e.g., `seed`, `refresh`, `init`).
 #'
 #' @return
-#'  The function returns an object of class `draws_df` giving posterior samples, with an attribute called 'data' which includes
-#'  the list of variables specified in the data block of the Stan program.
+#'  The function returns an object of class `draws_df` containing posterior samples. The object has two attributes:
+#'
+#'  \describe{
+#'    \item{data}{a list of variables specified in the data block of the Stan program}
+#'
+#'    \item{model}{a character string indicating the model name}
+#'  }
 #'
 #' @references
-#'  Alt, E. M., Chang, X., Jiang, X., Liu, Q., Mo, M., Xia, H. M., and Ibrahim, J. G. (2023). LEAP: The latent exchangeability prior for borrowing information from historical data. arXiv preprint.
+#'  Alt, E. M., Chang, X., Jiang, X., Liu, Q., Mo, M., Xia, H. M., and Ibrahim, J. G. (2024). LEAP: The latent exchangeability prior for borrowing information from historical data. Biometrics, 80(3).
 #'
 #' @examples
 #' data(actg019)
@@ -77,6 +88,9 @@ glm.leap = function(
     beta.sd           = NULL,
     disp.mean         = NULL,
     disp.sd           = NULL,
+    gamma.lower       = 0,
+    gamma.upper       = 1,
+    get.loglik        = FALSE,
     iter_warmup       = 1000,
     iter_sampling     = 1000,
     chains            = 4,
@@ -97,7 +111,10 @@ glm.leap = function(
     beta.mean      = beta.mean,
     beta.sd        = beta.sd,
     disp.mean      = disp.mean,
-    disp.sd        = disp.sd
+    disp.sd        = disp.sd,
+    gamma.lower    = gamma.lower,
+    gamma.upper    = gamma.upper,
+    get.loglik     = get.loglik
   )
 
   glm_leap = instantiate::stan_package_model(
@@ -125,5 +142,7 @@ glm.leap = function(
   d        = rename.params(fit = fit, oldnames = oldnames, newnames = newnames)
   ## add data used for the variables specified in the data block of the Stan program as an attribute
   attr(x = d, which = 'data') = standat
+  ## add model name as an attribute
+  attr(x = d, which = 'model') = "glm_leap"
   return(d)
 }
